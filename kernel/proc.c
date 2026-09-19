@@ -124,6 +124,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->cputime = 0;
 
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0) {
@@ -357,7 +358,9 @@ kexit(int status)
   p->xstate = status;
   p->state = ZOMBIE;
 
-  release(&wait_lock);
+  printk("CPU Usage: Process %s used %d ticks\n", p->name, p->cputime);
+ 
+ release(&wait_lock);
 
   // Jump into the scheduler, never to return.
   sched();
