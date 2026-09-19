@@ -25,7 +25,8 @@ char *sys_sbrk(int, int);
 int pause(int);
 int uptime(void);
 int sync(void);
-int wait (int*, struct rusage*);
+struct rusage;
+int wait2(int*, struct rusage*);
 
 // ulib.c
 int stat(const char *, struct stat *);
