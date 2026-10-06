@@ -477,6 +477,21 @@ kwait2(uint64 addr, uint64 rusage_addr)
   }
 }
 
+void
+getprocs(0, &addr) {
+  struct pstat;
+  
+
+  for (;;) {
+    for (pp; pp < &proc[NPROC]; pp++) {
+      if (pp->state == UNUSED) {
+        break;
+      }
+      
+    }
+  }
+}
+
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:

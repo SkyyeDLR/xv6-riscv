@@ -118,3 +118,10 @@ sys_wait2(void) {
   argaddr(1, &rusage_addr);
   return kwait2(addr, rusage_addr);
 }
+
+uint64
+sys_getprocs(void) {
+  uint64 addr;
+  argaddr(0, &addr);
+  return getprocs(addr)
+}
