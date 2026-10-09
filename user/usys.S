@@ -120,3 +120,13 @@ getprocs:
  li a7, SYS_getprocs
  ecall
  ret
+.global getpriority
+getpriority:
+ li a7, SYS_getpriority
+ ecall
+ ret
+.global setpriority
+setpriority:
+ li a7, SYS_setpriority
+ ecall
+ ret

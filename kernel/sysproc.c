@@ -143,6 +143,8 @@ sys_getprocs(void)
 
       uint64 dst = st_addr + count * sizeof(struct pstat);
 
+      st.priority = p->priority;
+
       // Pass myproc()->sz as the 2nd parameter
       if(copyout(myproc()->pagetable, myproc()->sz, dst, (char *)&st, sizeof(struct pstat)) < 0){
         release(&p->lock);
@@ -153,4 +155,28 @@ sys_getprocs(void)
     release(&p->lock);
   }
   return count;
+}
+
+uint64
+sys_getpriority(void)
+{
+  return myproc()->priority;
+}
+
+uint64
+sys_setpriority(void)
+{
+  int new_pri;
+  argint(0, &new_pri);
+
+  // Validate range (0 to 49)
+  if (new_pri < 0 || new_pri > 49)
+    return -1;
+
+  struct proc *p = myproc();
+  acquire(&p->lock);
+  p->priority = new_pri;
+  release(&p->lock);
+
+  return 0;
 }
