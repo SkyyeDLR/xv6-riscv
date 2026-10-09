@@ -115,3 +115,8 @@ wait2:
  li a7, SYS_wait2
  ecall
  ret
+.global getprocs
+getprocs:
+ li a7, SYS_getprocs
+ ecall
+ ret

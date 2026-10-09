@@ -1,9 +1,13 @@
 #ifndef PSTAT_H
 #define PSTAT_H
+#include "param.h"
+#include "types.h"
 
 struct rusage {
   uint cputime;
 };
+
+enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 struct pstat {
   int pid;

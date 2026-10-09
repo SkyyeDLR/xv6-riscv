@@ -155,7 +155,8 @@ UPROGS=\
 	$U/_matmul\
 	$U/_uptime\
 	$U/_time1\
-	$U/_time
+	$U/_time\
+	$U/_ps
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 

@@ -6,6 +6,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "vm.h"
+#include "pstat.h"
 
 uint64
 sys_exit(void)
@@ -119,9 +120,37 @@ sys_wait2(void) {
   return kwait2(addr, rusage_addr);
 }
 
+extern struct proc proc[];
+
 uint64
-sys_getprocs(void) {
-  uint64 addr;
-  argaddr(0, &addr);
-  return getprocs(addr)
+sys_getprocs(void)
+{
+  uint64 st_addr;
+  argaddr(0, &st_addr);
+
+  struct proc *p;
+  struct pstat st;
+  int count = 0;
+
+  for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
+    if(p->state != UNUSED){
+      st.pid = p->pid;
+      st.state = p->state;
+      st.size = p->sz;
+      st.ppid = p->parent ? p->parent->pid : 0;
+      safestrcpy(st.name, p->name, sizeof(p->name));
+
+      uint64 dst = st_addr + count * sizeof(struct pstat);
+
+      // Pass myproc()->sz as the 2nd parameter
+      if(copyout(myproc()->pagetable, myproc()->sz, dst, (char *)&st, sizeof(struct pstat)) < 0){
+        release(&p->lock);
+        return -1;
+      }
+      count++;
+    }
+    release(&p->lock);
+  }
+  return count;
 }

@@ -113,6 +113,7 @@ allocproc(void)
 {
   struct proc *p;
 
+
   for (p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
     if (p->state == UNUSED) {
@@ -477,38 +478,6 @@ kwait2(uint64 addr, uint64 rusage_addr)
   }
 }
 
-void
-getprocs(uint64 &addr) {
-  struc proc p*;
-  struct pstat pst;  
-  int count = 0;
-  
-  for (p = proc; p < &proc[NPROC]; p++) {
-   acquire(&p->lock);
-    
-    if(p->state != UNUSED) {
-      st.pid = p->pid;
-      st.state = p->state;
-      st.size = p->sz;
-      st.ppid = p->parent ? p->parent->pid : 0;
-      safestrcpy(st.name, p->name, sizeof(p->name));
-      
-      release(&p->lock);
-
-      if(copyout(myproc()->pagetable, 
-          upstat + count * sizeof(struct pstat), 
-           (char *)&st, sizeof(struct pstat)) < 0) {
-        return -1;
-      }
-      count++;
-  } else {
-      release(&p->lock);
-    }
-  }
-
-  return count; // Return total number of active processes
-  }
-}
 
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
