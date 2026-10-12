@@ -16,6 +16,7 @@ struct pstat {
   int ppid;
   char name[16];
   int priority;
+  uint64 readytime;
 };
 
 #endif

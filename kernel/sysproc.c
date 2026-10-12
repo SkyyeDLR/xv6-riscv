@@ -144,6 +144,7 @@ sys_getprocs(void)
       uint64 dst = st_addr + count * sizeof(struct pstat);
 
       st.priority = p->priority;
+      st.readytime = p->readytime;
 
       // Pass myproc()->sz as the 2nd parameter
       if(copyout(myproc()->pagetable, myproc()->sz, dst, (char *)&st, sizeof(struct pstat)) < 0){

@@ -24,8 +24,12 @@ main(int argc, char **argv)
   printf("pid\tstate\t\tsize\tppid\tname\n");
   for (i=0; i<nprocs; i++) {
     state = states[uproc[i].state];
-    printf("%d\t%s\t%ld\t%d\t%s\n", uproc[i].pid, state,
-                   uproc[i].size, uproc[i].ppid, uproc[i].name);
+    uint64 age = 0;
+    if (uproc[i].state == RUNNABLE) {
+      age = uptime() - uproc[i].readytime;
+    }
+    printf("%d\t%s\t%ld\t%ld\t%d\t\t%d\t%s\n", uproc[i].pid, state,
+            uproc[i].size, age, uproc[i].priority, uproc[i].ppid, uproc[i].name);
   }
 
   exit(0);

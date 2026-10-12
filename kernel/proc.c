@@ -231,6 +231,7 @@ userinit(void)
   p->cwd = namei("/");
 
   p->state = RUNNABLE;
+  p->readytime= ticks;
 
   release(&p->lock);
 }
@@ -305,6 +306,7 @@ kfork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+  np->readytime= ticks;
   release(&np->lock);
 
   return pid;
@@ -566,6 +568,7 @@ yield(void)
   struct proc *p = myproc();
   acquire(&p->lock);
   p->state = RUNNABLE;
+  p->readytime= ticks;
   sched();
   release(&p->lock);
 }
@@ -652,6 +655,7 @@ wakeup(void *chan)
       // go to sleep, also set it back to RUNNING.
       if (p->state == SLEEPING) {
         p->state = RUNNABLE;
+        p->readytime= ticks;
       }
     }
     release(&p->lock);
@@ -673,6 +677,7 @@ kkill(int pid)
       if (p->state == SLEEPING) {
         // Wake process from sleep().
         p->state = RUNNABLE;
+        p->readytime= ticks;
       }
       release(&p->lock);
       return 0;
