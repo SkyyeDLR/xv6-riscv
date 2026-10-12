@@ -506,31 +506,49 @@ scheduler(void)
     intr_on();
     intr_off();
 
-    int found = 0;
-    for (p = proc; p < &proc[NPROC]; p++) {
-      acquire(&p->lock);
-      if (p->state == RUNNABLE) {
-        // Switch to chosen process.  It is the process's job
-        // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
+    #if SCHEDULER_POLICY == PRIO_POLICY
+      struct proc *best_p = 0;
 
-        // Don't re-enable interrupts on release.
-        mycpu()->intena = 0;
-
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
-        found = 1;
+      for (p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+        if (p->state == RUNNABLE) {
+          if (!best_p || (p->priority > best_p->priority)) {
+            if (best_p)
+              release(&best_p->lock); // Release previous best lock
+            best_p = p;
+            continue; // Keep best_p locked
+          }
+        }
+        release(&p->lock);
       }
-      release(&p->lock);
-    }
-    if (found == 0) {
-      // nothing to run; stop running on this core until an interrupt.
-      asm volatile("wfi");
-    }
+
+    #else
+      int found = 0;
+      for (p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+        if (p->state == RUNNABLE) {
+          // Switch to chosen process.  It is the process's job
+          // to release its lock and then reacquire it
+          // before jumping back to us.
+          p->state = RUNNING;
+          c->proc = p;
+          swtch(&c->context, &p->context);
+
+          // Don't re-enable interrupts on release.
+          mycpu()->intena = 0;
+
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+          found = 1;
+        }
+        release(&p->lock);
+      }
+      if (found == 0) {
+        // nothing to run; stop running on this core until an interrupt.
+        asm volatile("wfi");
+      }
+  #endif
   }
 }
 
