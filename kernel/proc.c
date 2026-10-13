@@ -522,6 +522,26 @@ scheduler(void)
         release(&p->lock);
       }
 
+      if (best_p) {
+        // Switch to chosen process.  It is the process's job
+        // to release its lock and then reacquire it
+        // before jumping back to us.
+        best_p->state = RUNNING;
+        c->proc = best_p;
+        swtch(&c->context, &best_p->context);
+
+        // Don't re-enable interrupts on release.
+        mycpu()->intena = 0;
+
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
+        release(&best_p->lock);
+      } else {
+        // nothing to run; stop running on this core until an interrupt.
+        asm volatile("wfi");
+      }
+
     #else
       int found = 0;
       for (p = proc; p < &proc[NPROC]; p++) {

@@ -156,6 +156,7 @@ UPROGS=\
 	$U/_uptime\
 	$U/_time1\
 	$U/_time\
+	$U/_pexec\
 	$U/_ps\
 	$U/_testpriority
 fs.img: mkfs/mkfs README $(UPROGS)
