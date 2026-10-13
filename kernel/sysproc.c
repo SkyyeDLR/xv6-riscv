@@ -145,9 +145,9 @@ sys_getprocs(void)
 
       st.priority = p->priority;
       st.readytime = p->readytime;
+      st.cputime = p->cputime;
 
-      // Pass myproc()->sz as the 2nd parameter
-      if(copyout(myproc()->pagetable, myproc()->sz, dst, (char *)&st, sizeof(struct pstat)) < 0){
+      if(copyout(myproc()->pagetable, dst, TRAPFRAME, (char *)&st, sizeof(struct pstat)) < 0){
         release(&p->lock);
         return -1;
       }

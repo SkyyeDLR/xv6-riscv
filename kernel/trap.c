@@ -156,10 +156,13 @@ kerneltrap()
   }
 
   // give up the CPU if this is a timer interrupt.
-  if (which_dev == 2 && myproc() != 0) {
-    myproc()->cputime++;
+  if(which_dev == 2) { // timer interrupt check
+  struct proc *p = myproc();
+  if(p && p->state == RUNNING) {
+    p->cputime++;
     yield();
   }
+}
 
   // the yield() may have caused some traps to occur,
   // so restore trap registers for use by kernelvec.S's sepc instruction.

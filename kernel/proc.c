@@ -7,6 +7,7 @@
 #include "proc.h"
 #include "defs.h"
 #include "pstat.h"
+#define MAXEFFPRIORITY 99
 
 struct cpu cpus[NCPU];
 
@@ -16,6 +17,8 @@ struct proc *initproc;
 
 int nextpid = 1;
 struct spinlock pid_lock;
+
+extern uint ticks;
 
 extern void forkret(void);
 static void freeproc(struct proc *p);
@@ -129,6 +132,7 @@ found:
   p->state = USED;
   p->cputime = 0;
   p->priority = 0;
+  p->readytime = 0;
 
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0) {
@@ -231,8 +235,7 @@ userinit(void)
   p->cwd = namei("/");
 
   p->state = RUNNABLE;
-  p->readytime= ticks;
-
+  p->readytime = ticks;
   release(&p->lock);
 }
 
@@ -306,7 +309,7 @@ kfork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
-  np->readytime= ticks;
+  np->readytime = ticks;
   release(&np->lock);
 
   return pid;
@@ -508,14 +511,22 @@ scheduler(void)
 
     #if SCHEDULER_POLICY == PRIO_POLICY
       struct proc *best_p = 0;
+      int max_eff_prio = -1;
 
       for (p = proc; p < &proc[NPROC]; p++) {
         acquire(&p->lock);
         if (p->state == RUNNABLE) {
-          if (!best_p || (p->priority > best_p->priority)) {
+          int eff_prio = p->priority + (ticks - p->readytime);
+          if (eff_prio > MAXEFFPRIORITY) {
+              eff_prio = MAXEFFPRIORITY;
+          }
+
+          // Select the process with the highest effective priority
+          if (!best_p || (eff_prio > max_eff_prio)) {
             if (best_p)
               release(&best_p->lock); // Release previous best lock
             best_p = p;
+            max_eff_prio = eff_prio;
             continue; // Keep best_p locked
           }
         }
@@ -606,7 +617,7 @@ yield(void)
   struct proc *p = myproc();
   acquire(&p->lock);
   p->state = RUNNABLE;
-  p->readytime= ticks;
+  p->readytime = ticks;
   sched();
   release(&p->lock);
 }
@@ -693,7 +704,7 @@ wakeup(void *chan)
       // go to sleep, also set it back to RUNNING.
       if (p->state == SLEEPING) {
         p->state = RUNNABLE;
-        p->readytime= ticks;
+        p->readytime = ticks;
       }
     }
     release(&p->lock);
@@ -715,7 +726,7 @@ kkill(int pid)
       if (p->state == SLEEPING) {
         // Wake process from sleep().
         p->state = RUNNABLE;
-        p->readytime= ticks;
+        p->readytime = ticks;      
       }
       release(&p->lock);
       return 0;

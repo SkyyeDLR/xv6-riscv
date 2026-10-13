@@ -17,6 +17,7 @@ struct pstat {
   char name[16];
   int priority;
   uint64 readytime;
+  int cputime;
 };
 
 #endif

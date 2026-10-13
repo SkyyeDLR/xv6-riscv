@@ -11,27 +11,40 @@ main(int argc, char **argv)
   int i;
   char *state;
   static char *states[] = {
-    [SLEEPING]  "sleeping",
-    [RUNNABLE]  "runnable",
-    [RUNNING]   "running ",
-    [ZOMBIE]    "zombie  "
+    [UNUSED]    = "unused",
+    [USED]      = "used",
+    [SLEEPING]  = "sleeping",
+    [RUNNABLE]  = "runnable",
+    [RUNNING]   = "running ",
+    [ZOMBIE]    = "zombie  "
   };
 
   nprocs = getprocs(uproc);
+  printf("nprocs = %d\n", nprocs);
   if (nprocs < 0)
     exit(-1);
 
-  printf("pid\tstate\t\tsize\tppid\tname\n");
-  for (i=0; i<nprocs; i++) {
+  printf("pid\tstate\t\tsize\tage\tpriority\tcputime\tppid\tname\n");  
+
+  for (i = 0; i < nprocs; i++) {
+    if (uproc[i].state == UNUSED)
+      continue;
+
     state = states[uproc[i].state];
     uint64 age = 0;
     if (uproc[i].state == RUNNABLE) {
       age = uptime() - uproc[i].readytime;
     }
-    printf("%d\t%s\t%ld\t%ld\t%d\t\t%d\t%s\n", uproc[i].pid, state,
-            uproc[i].size, age, uproc[i].priority, uproc[i].ppid, uproc[i].name);
-  }
 
+    printf("%d\t%s\t%ld\t%ld\t%d\t\t%d\t\t%d\t%s\n",        
+        uproc[i].pid, 
+        state,
+        uproc[i].size, 
+        age, 
+        uproc[i].priority,
+        uproc[i].cputime,
+        uproc[i].ppid, 
+        uproc[i].name);
+  }
   exit(0);
 }
-
