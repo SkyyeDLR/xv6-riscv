@@ -25,3 +25,4 @@
 #define SYS_getprocs 24
 #define SYS_getpriority 25
 #define SYS_setpriority 26
+#define SYS_rename 27
