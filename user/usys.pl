@@ -47,3 +47,4 @@ entry("wait2");
 entry("getprocs");
 entry("getpriority");
 entry("setpriority");
+entry("rename");

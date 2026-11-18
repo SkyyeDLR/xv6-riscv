@@ -31,6 +31,7 @@ int wait2(int*, struct rusage*);
 int getprocs(struct pstat*);
 int getpriority(void);
 int setpriority(int);
+int rename(const char*, const char*);
 
 // ulib.c
 int stat(const char *, struct stat *);
